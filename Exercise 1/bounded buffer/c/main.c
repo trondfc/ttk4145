@@ -102,6 +102,7 @@ int main(){
     pthread_create(&consumer_thr, NULL, consumer, buf);
     
     pthread_join(producer_thr, NULL);
+    //pthread_join(consumer_thr, NULL);
     pthread_cancel(consumer_thr);
     
     buf_destroy(buf);
