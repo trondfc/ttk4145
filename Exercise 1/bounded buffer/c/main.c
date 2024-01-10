@@ -23,8 +23,19 @@ struct BoundedBuffer* buf_new(int size){
     
     pthread_mutex_init(&buf->mtx, NULL);
     // TODO: initialize semaphores
-    //sem_init(&buf->capacity,      0, /*starting value?*/);
-	//sem_init(&buf->numElements,   0, /*starting value?*/);
+    // Initializes with capacity of buffer size
+    if (sem_init(&buf->capacity,      0, size) == -1){
+        printf("Error initializing capacity semaphore \n");
+        perror("Error initializing capacity semaphore");
+        exit(EXIT_FAILURE);  // Exit or handle the error appropriately
+    }
+    //printf("Buffer capacity is %d \n", buf->capacity);
+    // Initializes with no elements in buffer
+	if (sem_init(&buf->numElements,   0, 0) == -1){
+        printf("Error initializing numElements semaphore \n");
+        perror("Error initializing capacity semaphore");
+        exit(EXIT_FAILURE);  // Exit or handle the error appropriately
+    }
     
     return buf;    
 }
@@ -42,18 +53,39 @@ void buf_destroy(struct BoundedBuffer* buf){
 
 void buf_push(struct BoundedBuffer* buf, int val){    
     // TODO: wait for there to be room in the buffer
+    if (sem_wait(&buf->capacity) == -1){
+        printf("Error with sem_wait() \n");
+    }
+
     // TODO: make sure there is no concurrent access to the buffer internals
+    pthread_mutex_lock(&buf->mtx);
     
     rb_push(buf->buf, val);
     
     
-    // TODO: signal that there are new elements in the buffer    
+    // TODO: signal that there are new elements in the buffer  
+    sem_post(&buf->numElements);  
+
+    //Unlock the mutex
+    pthread_mutex_unlock(&buf->mtx);
 }
 
 int buf_pop(struct BoundedBuffer* buf){
     // TODO: same, but different?
-    
+
+    if (sem_wait(&buf->numElements) == -1){
+        printf("Error with sem_wait() \n");
+    }
+    // make sure there is no concurrent access to the buffer internals
+    pthread_mutex_lock(&buf->mtx);
+
     int val = rb_pop(buf->buf);    
+
+    // Signal that there has been a change in the buffer
+    sem_post(&buf->capacity);
+
+    // Unlock the mutex
+    pthread_mutex_unlock(&buf->mtx);
     
     return val;
 }
