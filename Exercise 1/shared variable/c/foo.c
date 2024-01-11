@@ -45,6 +45,7 @@ void* decrementingThreadFunction(){
 
 
 int main(){
+    // Using mutex as ther is only one shared resource
     if(pthread_mutex_init(&mut, NULL) != 0){
         printf("mutex init error");
         exit(0);

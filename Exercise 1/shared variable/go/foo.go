@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fmt"
 	. "fmt"
 	"runtime"
 	"time"
@@ -12,24 +13,30 @@ var i = 0
 
 func incrementing(ch1 chan int, ch2 chan int, done chan int) {
 	//TODO: increment i 1000000 times
-	for x := 0; x < 1000005; x++ {
+	for x := 0; x < 1000000; x++ {
 		numb := <-ch1
 		numb++
 		ch2 <- numb
 	}
 	done <- 0
-	dummy := <-ch1
-	dummy++
+	for {
+		temp := <-ch1
+		ch2 <- temp
+	}
 }
 
 func decrementing(ch1 chan int, ch2 chan int, done chan int) {
 	//TODO: decrement i 1000000 times
-	for x := 0; x < 1000000; x++ {
+	for x := 0; x < 1000005; x++ {
 		numb := <-ch1
 		numb--
 		ch2 <- numb
 	}
 	done <- 0
+	for {
+		temp := <-ch1
+		ch2 <- temp
+	}
 }
 
 func server(ch1 chan int, ch2 chan int, done chan int) {
@@ -43,6 +50,7 @@ func server(ch1 chan int, ch2 chan int, done chan int) {
 			end++
 			h++
 			if end == 2 {
+				fmt.Println("end")
 				return
 			}
 		}
