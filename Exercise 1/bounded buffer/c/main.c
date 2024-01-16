@@ -55,6 +55,7 @@ void buf_push(struct BoundedBuffer* buf, int val){
     // TODO: wait for there to be room in the buffer
     if (sem_wait(&buf->capacity) == -1){
         printf("Error with sem_wait() \n");
+        exit(EXIT_FAILURE);
     }
 
     // TODO: make sure there is no concurrent access to the buffer internals
@@ -75,6 +76,7 @@ int buf_pop(struct BoundedBuffer* buf){
 
     if (sem_wait(&buf->numElements) == -1){
         printf("Error with sem_wait() \n");
+        exit(EXIT_FAILURE);
     }
     // make sure there is no concurrent access to the buffer internals
     pthread_mutex_lock(&buf->mtx);

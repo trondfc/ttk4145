@@ -8,27 +8,22 @@
 int i = 0;
 pthread_mutex_t lock;
 
+pthread_mutex_t mut; 
 
 // Note the return type: void*
 void* incrementingThreadFunction(){
     // TODO: increment i 1_000_000 times
-    
-    
-     for(u_int32_t counter = 0; counter < 1000002; counter++){
-        if (pthread_mutex_lock(&lock) != 0){
-            printf("Mutex lock failed on incrementingThreadFunction()");
+    for(int x = 0; x < 1000000; x++){
+        if(pthread_mutex_lock(&mut) != 0){
+            printf("mutex lock error");
             exit(0);
         }
-
         i++;
-
-        if (pthread_mutex_unlock(&lock) != 0){
-            printf("Mutex unlock failed on incrementingThreadFunction()");
-            exit(1);
+        if(pthread_mutex_unlock(&mut) != 0){
+            printf("mutex unlock error");
+            exit(0);
         }
     }
-    
-    
     return NULL;
 }
 
@@ -36,49 +31,54 @@ void* decrementingThreadFunction(){
     // TODO: decrement i 1_000_000 times
     
     
-     for(u_int32_t counter = 0; counter < 1000000; counter++){
-        if (pthread_mutex_lock(&lock) != 0){
-            printf("Mutex lock failed on decrementingThreadFunction()");
+    for(int x = 0; x < 1000000-5; x++){
+        if(pthread_mutex_lock(&mut) != 0){
+            printf("mutex lock error");
             exit(0);
         }
-
         i--;
-
-        if (pthread_mutex_unlock(&lock) != 0){
-            printf("Mutex unlock failed on decrementingThreadFunction()");
-            exit(1);
-        } 
+        if(pthread_mutex_unlock(&mut) != 0){
+            printf("mutex unlock error");
+            exit(0);
+        }
     }
-    
-
     return NULL;
 }
 
 
 int main(){
+    // Using mutex as ther is only one shared resource
+    if(pthread_mutex_init(&mut, NULL) != 0){
+        printf("mutex init error");
+        exit(0);
+    }
+
     // TODO: 
     // start the two functions as their own threads using `pthread_create`
     // Hint: search the web! Maybe try "pthread_create example"?
-    pthread_t thread_1;
-    pthread_t thread_2;
-    if (pthread_mutex_init(&lock, NULL) != 0){
-        printf("Creation of mutex failed");
-        return 1;
+    pthread_t thread1;
+    pthread_t thread2;
+    if(pthread_create(&thread1, NULL, incrementingThreadFunction, NULL) != 0){
+        printf("Thread1 error");
+        exit(0);
     }
-
-    if (pthread_create(&thread_1, NULL, incrementingThreadFunction, "thread_1") != 0){
-        printf("pthread_create() error for thread_1");
+    if(pthread_create(&thread2, NULL, decrementingThreadFunction, NULL) != 0){
+        printf("Thread2 error");
+        exit(0);
     }
-
-    if (pthread_create(&thread_2, NULL, decrementingThreadFunction, "thread_2") != 0){
-        printf("pthread_create() error for thread 2");
-    }
-
+    
     // TODO:
     // wait for the two threads to be done before printing the final result
-    // Hint: Use `pthread_join`    
-    (void) pthread_join(thread_1, NULL);
-    (void) pthread_join(thread_2, NULL);
+    // Hint: Use `pthread_join` 
+
+    if(pthread_join(thread1, NULL) != 0){
+        printf("thread1 error");
+        exit(0);
+    }
+    if(pthread_join(thread2, NULL) != 0){
+        printf("thread2 error");
+        exit(0);
+    }
     
     
     printf("The magic number is: %d\n", i);
