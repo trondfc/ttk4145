@@ -7,6 +7,8 @@
 pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 int i = 0;
 
+pthread_mutex_t mut; 
+
 // Note the return type: void*
 void* incrementingThreadFunction(){
     
@@ -35,6 +37,12 @@ void* decrementingThreadFunction(){
 
 
 int main(){
+    // Using mutex as ther is only one shared resource
+    if(pthread_mutex_init(&mut, NULL) != 0){
+        printf("mutex init error");
+        exit(0);
+    }
+
     // TODO: 
     pthread_t t1, t2;
     char *message1 = "thread 1";
@@ -42,6 +50,16 @@ int main(){
     int iret1, iret2;
     // start the two functions as their own threads using `pthread_create`
     // Hint: search the web! Maybe try "pthread_create example"?
+    pthread_t thread1;
+    pthread_t thread2;
+    if(pthread_create(&thread1, NULL, incrementingThreadFunction, NULL) != 0){
+        printf("Thread1 error");
+        exit(0);
+    }
+    if(pthread_create(&thread2, NULL, decrementingThreadFunction, NULL) != 0){
+        printf("Thread2 error");
+        exit(0);
+    }
     
     iret1 = pthread_create(&t1, NULL, incrementingThreadFunction, NULL);
     iret2 = pthread_create(&t2, NULL, decrementingThreadFunction, NULL);
