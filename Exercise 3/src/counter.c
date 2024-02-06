@@ -10,6 +10,7 @@ struct message
 {
     long message_type;
     char message_text[100];
+    long message_num;
 };
 
 
@@ -44,7 +45,7 @@ void* incrementingThreadFunction(){
         strcpy(message.message_text, str);
 
         /* send message to queue */
-        if (msgsnd(msqid, &message, (sizeof(long) + sizeof(message.message_text)) + 1, 0) == -1) {
+        if (msgsnd(msqid, &message, sizeof(message), 0) == -1) {
             perror("msgsnd");
 
             exit(EXIT_FAILURE);
